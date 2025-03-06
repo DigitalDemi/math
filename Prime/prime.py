@@ -1,5 +1,6 @@
 # {x∈N∣x>2∧∀d∈N:(d∣x⇒d=1∨d=x)}
 # TODO: fix user input another time
+# TODO: check for the optimisation for checking quickly if prime
 def natural_number(x):
     return isinstance(x, int) and x > 0
 

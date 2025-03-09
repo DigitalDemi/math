@@ -11,15 +11,13 @@
 import socket
 import signal
 import sys
-from prime import prime
+from Prime.prime import Prime
 
 
 
 HOST = ''
 PORT  = 50000
 
-x = 3
-prime = prime.Prime(x)
 
 def sigint_handler(signum, frame):
     print('\nCtrl+C pressed, shutting down server...')
@@ -34,6 +32,10 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as server:
         connection , address = server.accept()
         with connection:
             print(f"The the client is {address}, {PORT}")
-            connection.sendall(str(prime).encode('utf-8'))
+            while True:
+                data = connection.recv(1024)
+                number = data.decode().strip()
+                prime = Prime(int(number))
+                connection.sendall(str(prime).encode('utf-8'))
 
             

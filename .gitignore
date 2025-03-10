@@ -2,3 +2,5 @@ poetry.lock
 __pycache__
 .env
 .python-version
+.vscode/
+build/

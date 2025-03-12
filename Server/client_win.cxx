@@ -60,13 +60,24 @@ typedef struct ClientSocket
         }
     }
 
-    int sendData(const char* sendbuf) {
+    // Got this part from AI, this is because while I was considering ways to pass information genricly
+    // And while taking a look at the code I produced, send and recieve buffers are used 
+    // this is just because sent as bytes so this doesnt need to forcably defined
+    // The server will be one to take information passed.
+    // Since protocols are defined rules we can have the server define the rules and just interpret them this way
+    // This means we dont have the change the client code, send what ever information, 
+    // then allow the server to take the information as btyes and  define the contract with the client
+    // We still get type safety this way
+    // ultimatly, the information is being sent is just bytes
+
+    template<typename T>
+    int sendData(const T& data) {
         if (ConnectSocket == INVALID_SOCKET) {
             cout << "Socket is invalid, cannot send data.\n";
             return -1;
         }
         
-        int iResult = send(ConnectSocket, sendbuf, (int)strlen(sendbuf), 0);
+        int iResult = send(ConnectSocket, (char*)&data, sizeof(T), 0);
         if (iResult == SOCKET_ERROR) {
             cout << "send failed: " << WSAGetLastError() << '\n';
             return -1;
@@ -99,6 +110,8 @@ typedef struct ClientSocket
             cout << "Socket is invalid, cannot receive data.\n";
             return -1;
         }
+
+
         
         int iResult = 0;
         do {
@@ -106,6 +119,10 @@ typedef struct ClientSocket
             if (iResult > 0) {
                 cout << "Bytes received: " << iResult << '\n';
                 
+            if (iResult == sizeof(int)) {
+                int receivedValue = *reinterpret_cast<int*>(recvbuf);
+                cout << "Data (as int): " << receivedValue << '\n';
+            }
                 recvbuf[iResult] = '\0';
                 cout << "Data: " << recvbuf << '\n';
                 bytesReceived += iResult;
@@ -169,12 +186,13 @@ namespace client
         return 0; 
     }
     
-    int sendMessage(const char* message) {
+    template<typename T>
+    int sendMessage(const T& data) {
         if (clientSocket == nullptr) {
             cout << "Client socket not initialized\n";
             return -1;
         }
-        return clientSocket->sendData(message);
+        return clientSocket->sendData(data);
     }
     
     int receiveMessages() {
@@ -208,8 +226,9 @@ int main()
     
     cout << "Connected to server successfully\n";
     
+    int value = 42;
     const char* testMessage = "This is a test message";
-    client::sendMessage(testMessage);
+    client::sendMessage(value);
     
     client::closeConnection();
     

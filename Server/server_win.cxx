@@ -107,6 +107,7 @@ typedef struct ServerSocket
         return true;
     }
     
+    // server takes int now (dead code)
     int receiveAndEcho() {
         char recvbuf[DEFAULT_BUFLEN];
         int recvbuflen = DEFAULT_BUFLEN;
@@ -122,16 +123,24 @@ typedef struct ServerSocket
             if (iResult > 0) {
                 cout << "Bytes received: " << iResult << '\n';
                 recvbuf[iResult] = '\0';
-                cout << "Data received: " << recvbuf << '\n';
+                cout << "Data received: " << int(recvbuf) << '\n';
                 
-                // Echo the buffer back to the sender
-                int iSendResult = send(ClientSocket, recvbuf, iResult, 0);
+                int receivedValue = *reinterpret_cast<int*>(recvbuf);
+
+                Prime prime(receivedValue);
+
+                std::string response = prime.prime_or_composite();
+                cout << "Processing: " << response << '\n';
+
+               
+                int iSendResult = send(ClientSocket, response.c_str(), response.length(), 0);
                 if (iSendResult == SOCKET_ERROR) {
                     cout << "Send failed with error: " << WSAGetLastError() << '\n';
                     return -1;
                 }
+
                 cout << "Bytes sent: " << iSendResult << '\n';
-                totalBytesProcessed += iResult;
+                totalBytesProcessed += iSendResult;
             }
             else if (iResult == 0)
                 cout << "Connection closing...\n";
@@ -143,7 +152,7 @@ typedef struct ServerSocket
         
         return totalBytesProcessed;
     }
-    
+
     bool shutdownClient() {
         if (ClientSocket == INVALID_SOCKET) {
             return false;

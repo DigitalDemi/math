@@ -9,6 +9,7 @@
 #include <stdio.h>
 #include <iostream>
 #include <atomic>
+#include <prime.hxx>
 
 
 #pragma comment(lib, "Ws2_32.lib")
